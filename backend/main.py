@@ -4,7 +4,7 @@ import fastf1
 import fastf1.plotting
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # Essencial para rodar em servidores sem interface gráfica
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -22,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Cria um diretório temporário no servidor (apaga quando o servidor reinicia)
+# Configuração do diretório temporário para o cache fugaz do Render
 temp_dir = tempfile.gettempdir()
 cache_path = os.path.join(temp_dir, 'f1_cache')
 if not os.path.exists(cache_path):
@@ -52,8 +52,9 @@ def listar_sessoes(ano: int, gp: str):
 def obter_resultado(ano: int, gp: str, sessao: str):
     try:
         session_data = fastf1.get_session(ano, gp, sessao)
-        # OTIMIZAÇÃO MAXIMA: Carrega só as voltas. Telemetria pesa muito, então tentamos sem ela primeiro.
-        session_data.load(laps=True, telemetry=True, weather=False, messages=False)
+        
+        # OTIMIZAÇÃO: telemetry=False aqui impede o download em massa de dados brutos de todos os carros
+        session_data.load(laps=True, telemetry=False, weather=False, messages=False)
         
         resultados = session_data.results
         dados_tabela = []
@@ -89,29 +90,55 @@ def obter_resultado(ano: int, gp: str, sessao: str):
             except:
                 posicao = posicao_real
 
-            dados_tabela.append({"pos": posicao, "driver": driver_id, "team": str(row.get('TeamName', 'Unknown')), "time": tempo, "color": cor})
+            dados_tabela.append({
+                "pos": posicao, 
+                "driver": driver_id, 
+                "team": str(row.get('TeamName', 'Unknown')), 
+                "time": tempo, 
+                "color": cor
+            })
             posicao_real += 1
             
+        # GERAÇÃO DO TRAÇADO SOB DEMANDA (Apenas da volta mais rápida da sessão)
         img_base64 = ""
         try:
             lap = session_data.laps.pick_fastest()
-            tel = lap.get_telemetry()
+            tel = lap.get_telemetry()  # Faz o download cirúrgico apenas dos pontos desta volta
             
-            fig, ax = plt.subplots(figsize=(6, 6))
-            ax.plot(tel['X'], tel['Y'], color='#e10600', linewidth=4)
-            ax.set_facecolor('#111111')
-            fig.patch.set_facecolor('#111111')
-            ax.axis('off')
-            
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)
-            buf.seek(0)
-            img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-            plt.close(fig)
+            if tel is not None and not tel.empty:
+                fig, ax = plt.subplots(figsize=(6, 6))
+                ax.plot(tel['X'], tel['Y'], color='#e10600', linewidth=4)
+                
+                # Tenta colocar a numeração das curvas
+                try:
+                    circ_info = session_data.get_circuit_info()
+                    if circ_info is not None:
+                        for _, corner in circ_info.corners.iterrows():
+                            num = str(corner['Number'])
+                            letra = str(corner['Letter']) if pd.notna(corner['Letter']) else ''
+                            ax.text(corner['X'], corner['Y'], f"{num}{letra}", 
+                                    color='white', fontsize=7, ha='center', va='center', weight='bold',
+                                    bbox=dict(boxstyle='circle,pad=0.2', facecolor='#111111', edgecolor='#444444', alpha=0.9))
+                except:
+                    pass
+
+                ax.set_facecolor('#111111')
+                fig.patch.set_facecolor('#111111')
+                ax.axis('off')
+                
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png', bbox_inches='tight', transparent=True)
+                buf.seek(0)
+                img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+                plt.close(fig)
         except Exception as e:
-            pass # Se a F1 bloquear a telemetria, não desenha o mapa, mas entrega a tabela intacta.
+            print(f"Não foi possível desenhar o traçado para esta sessão: {e}")
         
-        return {"sucesso": True, "resultados": dados_tabela, "circuito_base64": f"data:image/png;base64,{img_base64}" if img_base64 else None}
+        return {
+            "sucesso": True, 
+            "resultados": dados_tabela, 
+            "circuito_base64": f"data:image/png;base64,{img_base64}" if img_base64 else None
+        }
     except Exception as e:
         traceback.print_exc() 
         return {"sucesso": False, "erro": str(e)}
