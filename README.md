@@ -1,6 +1,6 @@
 # 🏎️ F1 Racing Data Dashboard
 
-Um painel interativo e responsivo que fornece dados em tempo real e históricos sobre as temporadas de Fórmula 1. Este projeto une o processamento de dados esportivos no Back-End com uma interface Front-End focada em identidade visual, usabilidade e alta performance.
+Um painel interativo e responsivo que fornece dados históricos sobre as temporadas de Fórmula 1. Este projeto une o processamento de dados esportivos no Back-End com uma interface Front-End focada em identidade visual, usabilidade e alta performance.
 
 ## ✨ Destaques e Funcionalidades
 
