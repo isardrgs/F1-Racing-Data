@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Telemetry Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-link active">Dashboard</a>
+        <a href="calendario.html" class="nav-link">Calendário 2026</a>
+    </nav>
+
+    <header>
+        <div class="logo-area">
+            <h1 id="gp-name">F1 DASHBOARD</h1>
+            <span class="subtitle" id="session-name">| RESULTS & TRACK LAYOUT</span>
+        </div>
+        
+        <div class="controls">
+            <select id="ano-select">
+                <option value="">Selecione o Ano</option>
+            </select>
+            <select id="corrida-select" disabled>
+                <option value="">Aguardando ano...</option>
+            </select>
+            <select id="sessao-select" disabled>
+                <option value="">Aguardando GP...</option>
+            </select>
+            <button id="btn-carregar" disabled>Carregar Dados</button>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <div class="panel">
+            <h2 class="panel-title">SESSION RESULTS</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Driver</th>
+                            <th>Team</th>
+                            <th>Color</th>
+                            <th>Best Lap</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-corpo">
+                        <tr><td colspan="5" class="loading">Selecione ano, GP e sessão para carregar.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 class="panel-title">CIRCUIT LAYOUT</h2>
+            <div id="circuito-container" class="circuit-container">
+                <p class="loading">O traçado aparecerá aqui...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

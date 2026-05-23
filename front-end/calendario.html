@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Calendário 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="calendario.html" class="nav-link active">Calendário 2026</a>
+    </nav>
+
+    <header>
+        <div class="logo-area">
+            <h1>FÓRMULA 1</h1>
+            <span class="subtitle">| CALENDÁRIO OFICIAL 2026</span>
+        </div>
+    </header>
+
+    <div class="dashboard-grid" style="grid-template-columns: 1fr; max-width: 900px;">
+        <div class="panel">
+            <h2 class="panel-title">CRONOGRAMA DAS ETAPAS</h2>
+            <div class="table-container" style="max-height: 600px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Grande Prêmio</th>
+                            <th>Localização / Circuito</th>
+                            <th>Data do Evento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendario-corpo">
+                        <tr><td colspan="3" class="loading">Buscando calendário na API...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO DE PRODUÇÃO: Quando hospedar no Render, mude o endereço abaixo
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
+        async function carregarCalendario() {
+            const corpo = document.getElementById('calendario-corpo');
+            try {
+                const resposta = await fetch(`${API_BASE_URL}/api/calendario/2026`);
+                const dados = await resposta.json();
+                
+                if(dados.sucesso) {
+                    corpo.innerHTML = '';
+                    dados.calendario.forEach(evento => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="driver-name" style="color: var(--f1-red);">${evento.gp}</td>
+                            <td>${evento.circuito}</td>
+                            <td style="font-weight: 700; color: var(--text-muted); font-size: 1.1rem;">${evento.data}</td>
+                        `;
+                        corpo.appendChild(tr);
+                    });
+                } else {
+                    corpo.innerHTML = '<tr><td colspan="3" class="loading" style="color:var(--f1-red);">Erro ao ler dados do calendário.</td></tr>';
+                }
+            } catch (erro) {
+                console.error(erro);
+                corpo.innerHTML = '<tr><td colspan="3" class="loading" style="color:var(--f1-red);">Não foi possível conectar ao servidor backend.</td></tr>';
+            }
+        }
+        carregarCalendario();
+    </script>
+</body>
+</html>
