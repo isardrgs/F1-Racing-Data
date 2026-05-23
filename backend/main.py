@@ -77,7 +77,6 @@ def obter_resultado(ano: int, gp: str, sessao: str):
         dados_tabela = []
         
         for index, row in resultados.iterrows():
-            # Lógica de cor protegida contra valores nulos da F1
             cor = "#555555" 
             team_color = row.get('TeamColor')
             if pd.notnull(team_color):
@@ -85,7 +84,6 @@ def obter_resultado(ano: int, gp: str, sessao: str):
                 if color_str and color_str.lower() != 'nan':
                     cor = f"#{color_str}" if not color_str.startswith('#') else color_str
             
-            # Tempo seguro pegando direto da coluna do DataFrame
             tempo = "N/A"
             best_lap = row.get('BestLapTime')
             if pd.notnull(best_lap) and str(best_lap).lower() != 'nan':
@@ -97,7 +95,6 @@ def obter_resultado(ano: int, gp: str, sessao: str):
                 except Exception:
                     pass
 
-            # Posição segura (Treinos Livres podem não ter a posição marcada)
             try:
                 pos = row.get('Position')
                 if pd.notnull(pos) and str(pos).lower() != 'nan':
@@ -115,17 +112,27 @@ def obter_resultado(ano: int, gp: str, sessao: str):
                 "color": cor
             })
             
+        # LÓGICA DO MAPA COM BACKUP INTELIGENTE
         img_base64 = ""
         try:
-            lap = session_data.laps.pick_fastest()
-            tel = lap.get_telemetry()
+            try:
+                # Tenta pegar o mapa usando a sessão selecionada
+                lap = session_data.laps.pick_fastest()
+                tel = lap.get_telemetry()
+                circ_info = session_data.get_circuit_info()
+            except Exception:
+                # Se falhar (comum em treinos), puxa a corrida oficial daquele ano/GP como backup
+                session_backup = fastf1.get_session(ano, gp, 'R')
+                session_backup.load(telemetry=True, weather=False, messages=False)
+                lap = session_backup.laps.pick_fastest()
+                tel = lap.get_telemetry()
+                circ_info = session_backup.get_circuit_info()
             
             fig, ax = plt.subplots(figsize=(6, 6))
             ax.plot(tel['X'], tel['Y'], color='#e10600', linewidth=4)
             
-            circuit_info = session_data.get_circuit_info()
-            if circuit_info is not None:
-                for _, corner in circuit_info.corners.iterrows():
+            if circ_info is not None:
+                for _, corner in circ_info.corners.iterrows():
                     num = str(corner['Number'])
                     letra = str(corner['Letter']) if pd.notna(corner['Letter']) else ''
                     texto = f"{num}{letra}"
@@ -144,7 +151,7 @@ def obter_resultado(ano: int, gp: str, sessao: str):
             img_base64 = base64.b64encode(buf.read()).decode('utf-8')
             plt.close(fig)
         except Exception as e:
-            print(f"Traçado indisponível: {e}")
+            print(f"Traçado indisponível mesmo com backup: {e}")
         
         return {
             "sucesso": True,
