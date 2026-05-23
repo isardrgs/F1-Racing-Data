@@ -1,5 +1,5 @@
 // CONFIGURAÇÃO DE PRODUÇÃO: Quando hospedar no Render, mude o endereço abaixo
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://f1-racing-data.onrender.com';
 
 const anoSelect = document.getElementById('ano-select');
 const corridaSelect = document.getElementById('corrida-select');
