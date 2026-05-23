@@ -24,7 +24,6 @@ if not os.path.exists('cache_dir'):
     os.makedirs('cache_dir')
 fastf1.Cache.enable_cache('cache_dir')
 
-# 1. Rota do Calendário com Data
 @app.get("/api/calendario/2026")
 def obter_calendario():
     try:
@@ -45,7 +44,6 @@ def obter_calendario():
     except Exception as e:
         return {"sucesso": False, "erro": str(e)}
 
-# 2. Rota para listar os GPs do ano
 @app.get("/api/corridas/{ano}")
 def listar_corridas(ano: int):
     try:
@@ -56,13 +54,11 @@ def listar_corridas(ano: int):
     except Exception:
         return {"corridas": []}
 
-# 3. NOVA ROTA: Listar quais sessões existem naquele GP (Treinos, Qualy, Sprint, Corrida)
 @app.get("/api/sessoes/{ano}/{gp}")
 def listar_sessoes(ano: int, gp: str):
     try:
         event = fastf1.get_event(ano, gp)
         sessoes = []
-        # A F1 tem até 5 sessões por final de semana
         for i in range(1, 6):
             nome_sessao = event.get(f'Session{i}')
             if pd.notna(nome_sessao) and str(nome_sessao).strip() != '' and str(nome_sessao).strip() != 'None':
@@ -71,11 +67,9 @@ def listar_sessoes(ano: int, gp: str):
     except Exception as e:
         return {"sucesso": False, "erro": str(e)}
 
-# 4. Rota de Resultados atualizada para aceitar a Sessão escolhida
 @app.get("/api/resultado/{ano}/{gp}/{sessao}")
 def obter_resultado(ano: int, gp: str, sessao: str):
     try:
-        # Carrega a sessão exata que você selecionou na tela
         session_data = fastf1.get_session(ano, gp, sessao)
         session_data.load(telemetry=True, weather=False, messages=False)
         
@@ -83,32 +77,40 @@ def obter_resultado(ano: int, gp: str, sessao: str):
         dados_tabela = []
         
         for index, row in resultados.iterrows():
-            cor = f"#{row['TeamColor']}" if pd.notnull(row['TeamColor']) and str(row['TeamColor']).strip() != "" else "#ffffff"
+            # Lógica de cor protegida contra valores nulos da F1
+            cor = "#555555" 
+            team_color = row.get('TeamColor')
+            if pd.notnull(team_color):
+                color_str = str(team_color).strip()
+                if color_str and color_str.lower() != 'nan':
+                    cor = f"#{color_str}" if not color_str.startswith('#') else color_str
             
+            # Tempo seguro pegando direto da coluna do DataFrame
             tempo = "N/A"
-            try:
-                laps_driver = session_data.laps.pick_driver(row['Abbreviation'])
-                if not laps_driver.empty:
-                    fastest_lap = laps_driver.pick_fastest()
-                    best_lap = fastest_lap.get('LapTime')
-                    
-                    if pd.notnull(best_lap):
-                        total_seconds = best_lap.total_seconds()
-                        minutos = int(total_seconds // 60)
-                        segundos = total_seconds % 60
-                        tempo = f"{minutos}:{segundos:06.3f}"
-            except Exception:
-                pass
+            best_lap = row.get('BestLapTime')
+            if pd.notnull(best_lap) and str(best_lap).lower() != 'nan':
+                try:
+                    total_seconds = best_lap.total_seconds()
+                    minutos = int(total_seconds // 60)
+                    segundos = total_seconds % 60
+                    tempo = f"{minutos}:{segundos:06.3f}"
+                except Exception:
+                    pass
 
+            # Posição segura (Treinos Livres podem não ter a posição marcada)
             try:
-                posicao = int(float(row['Position']))
+                pos = row.get('Position')
+                if pd.notnull(pos) and str(pos).lower() != 'nan':
+                    posicao = int(float(pos))
+                else:
+                    posicao = int(index) + 1 
             except Exception:
-                posicao = "-"
+                posicao = int(index) + 1
 
             dados_tabela.append({
                 "pos": posicao,
-                "driver": str(row['Abbreviation']),
-                "team": str(row['TeamName']),
+                "driver": str(row.get('Abbreviation', 'UNK')),
+                "team": str(row.get('TeamName', 'Unknown')),
                 "time": tempo,
                 "color": cor
             })
@@ -142,7 +144,7 @@ def obter_resultado(ano: int, gp: str, sessao: str):
             img_base64 = base64.b64encode(buf.read()).decode('utf-8')
             plt.close(fig)
         except Exception as e:
-            print(f"Não foi possível desenhar o traçado: {e}")
+            print(f"Traçado indisponível: {e}")
         
         return {
             "sucesso": True,
