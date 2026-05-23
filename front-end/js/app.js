@@ -17,7 +17,7 @@ for (let ano = anoAtual; ano >= 2020; ano--) {
     anoSelect.appendChild(option);
 }
 
-// DICIONÁRIO DE IMAGENS ESTÁTICAS (Convertido para PNG da Wikipédia para evitar bloqueio de SVG)
+// DICIONÁRIO DE IMAGENS ESTÁTICAS (Convertido para PNG)
 function obterImagemCircuito(gp) {
     const nome = gp.toLowerCase();
     if(nome.includes('bahrain')) return 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Bahrain_International_Circuit--Grand_Prix_Layout.svg/1024px-Bahrain_International_Circuit--Grand_Prix_Layout.svg.png';
@@ -63,17 +63,6 @@ function renderizarTabela(dados) {
     });
 }
 
-async function preloadSessao(ano, gp, sessao) {
-    const cacheKey = `f1_${ano}_${gp}_${sessao}`;
-    if (!localStorage.getItem(cacheKey)) {
-        try {
-            const resposta = await fetch(`${API_BASE_URL}/api/resultado/${ano}/${gp}/${sessao}`);
-            const dados = await resposta.json();
-            if (dados.sucesso) localStorage.setItem(cacheKey, JSON.stringify(dados));
-        } catch (e) {}
-    }
-}
-
 anoSelect.addEventListener('change', async () => {
     const ano = anoSelect.value;
     sessaoSelect.innerHTML = '<option value="">Aguardando GP...</option>';
@@ -85,15 +74,8 @@ anoSelect.addEventListener('change', async () => {
     corridaSelect.disabled = true;
 
     try {
-        const cacheKey = `calendario_${ano}`;
-        let dados;
-        if (localStorage.getItem(cacheKey)) {
-            dados = JSON.parse(localStorage.getItem(cacheKey));
-        } else {
-            const resposta = await fetch(`${API_BASE_URL}/api/corridas/${ano}`);
-            dados = await resposta.json();
-            localStorage.setItem(cacheKey, JSON.stringify(dados));
-        }
+        const resposta = await fetch(`${API_BASE_URL}/api/corridas/${ano}`);
+        const dados = await resposta.json();
 
         corridaSelect.innerHTML = '<option value="">Selecione o GP</option>';
         dados.corridas.forEach(corrida => {
@@ -117,25 +99,17 @@ corridaSelect.addEventListener('change', async () => {
     sessaoSelect.innerHTML = '<option value="">Buscando sessões...</option>';
     sessaoSelect.disabled = true;
 
-    // CARREGAMENTO SEGURO DA IMAGEM
+    // INSERÇÃO DO MAPA ESTÁTICO
     const urlImagem = obterImagemCircuito(gp);
     if (urlImagem !== '') {
-        // Usa filter css para transformar as imagens reais em artes cinzas e vermelhas adaptadas ao layout
         circuitoContainer.innerHTML = `<img src="${urlImagem}" alt="Traçado" class="circuit-img" style="filter: invert(1) brightness(0.8) drop-shadow(0 0 10px rgba(225, 6, 0, 0.3)); max-width: 100%; height: auto;">`;
     } else {
         circuitoContainer.innerHTML = `<p class="loading" style="font-size:0.8rem; color:#555;">Traçado indisponível.</p>`;
     }
 
     try {
-        const cacheKey = `sessoes_${ano}_${gp}`;
-        let dados;
-        if (localStorage.getItem(cacheKey)) {
-            dados = JSON.parse(localStorage.getItem(cacheKey));
-        } else {
-            const resposta = await fetch(`${API_BASE_URL}/api/sessoes/${ano}/${gp}`);
-            dados = await resposta.json();
-            if (dados.sucesso) localStorage.setItem(cacheKey, JSON.stringify(dados));
-        }
+        const resposta = await fetch(`${API_BASE_URL}/api/sessoes/${ano}/${gp}`);
+        const dados = await resposta.json();
 
         if(dados.sucesso) {
             sessaoSelect.innerHTML = '<option value="">Selecione a Sessão</option>';
@@ -146,8 +120,6 @@ corridaSelect.addEventListener('change', async () => {
                 sessaoSelect.appendChild(option);
             });
             sessaoSelect.disabled = false;
-            
-            if (dados.sessoes.includes("Race")) preloadSessao(ano, gp, "Race");
         }
     } catch (erro) {
         sessaoSelect.innerHTML = '<option value="">Erro ao buscar</option>';
@@ -166,14 +138,6 @@ btnCarregar.addEventListener('click', async () => {
     gpName.textContent = gp.toUpperCase();
     sessionNameSubtitle.textContent = `| ${sessao.toUpperCase()} RESULTS`;
     
-    const cacheKey = `f1_${ano}_${gp}_${sessao}`;
-    const cacheSalvo = localStorage.getItem(cacheKey);
-
-    if (cacheSalvo) {
-        renderizarTabela(JSON.parse(cacheSalvo));
-        return;
-    }
-
     corpoTabela.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ffeb3b; padding:30px;">Baixando resultados oficiais...</td></tr>`;
     btnCarregar.disabled = true;
     btnCarregar.textContent = "Carregando...";
@@ -184,7 +148,6 @@ btnCarregar.addEventListener('click', async () => {
 
         if (dados.sucesso) {
             if (dados.resultados && dados.resultados.length > 0) {
-                localStorage.setItem(cacheKey, JSON.stringify(dados));
                 renderizarTabela(dados);
             } else {
                 corpoTabela.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Sessão incompatível com o banco de dados esportivo no momento.</td></tr>`;
