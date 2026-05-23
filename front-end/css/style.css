@@ -94,7 +94,7 @@ select, button {
     border-radius: 4px;
     outline: none;
     cursor: pointer;
-    box-sizing: border-box; /* Garante que o padding não quebre a largura em telas menores */
+    box-sizing: border-box;
 }
 
 select:disabled, button:disabled {
@@ -225,17 +225,18 @@ td {
    ========================================= */
 @media (max-width: 768px) {
     body {
-        padding: 15px; /* Reduz a margem lateral no celular */
+        padding: 15px;
+        overflow-x: hidden; /* Corta qualquer tentativa de scroll lateral na raiz */
     }
 
     .dashboard-grid {
-        grid-template-columns: 1fr; /* Coloca a tabela e o circuito um embaixo do outro */
+        grid-template-columns: 1fr;
         gap: 20px;
     }
 
     .navbar {
         justify-content: center;
-        flex-wrap: wrap; /* Permite que os botões de nav pulem de linha se a tela for minúscula */
+        flex-wrap: wrap;
     }
 
     header {
@@ -252,25 +253,99 @@ td {
     }
 
     h1 {
-        font-size: 2.8rem; /* Diminui um pouquinho o título principal */
+        font-size: 2.8rem;
     }
 
     .controls {
         width: 100%;
-        flex-direction: column; /* Coloca os seletores um embaixo do outro */
+        flex-direction: column;
     }
 
     select, button {
-        width: 100%; /* Estica os seletores para ocupar a tela toda e facilitar o toque */
+        width: 100%;
         text-align: center;
         padding: 12px;
     }
 
     .circuit-container {
-        min-height: 250px; /* Reduz o espaço vazio antes de carregar a imagem no celular */
+        min-height: 250px;
     }
 
     .panel {
-        padding: 15px; /* Reduz o espaçamento interno das caixas */
+        padding: 15px;
+    }
+
+    /* -----------------------------------------
+       TRANSFORMAÇÃO DA TABELA EM CARDS (MOBILE)
+       ----------------------------------------- */
+    table, #tabela-corpo {
+        display: block;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    thead {
+        display: none; /* Esconde o cabeçalho original */
+    }
+    
+    tbody {
+        display: block;
+        width: 100%;
+    }
+    
+    #tabela-corpo tr {
+        display: grid;
+        grid-template-columns: 35px 1fr auto auto;
+        grid-template-areas: 
+            "pos driver color time"
+            ". team team team";
+        background-color: #111111;
+        border: 1px solid #333;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 15px 12px;
+        align-items: center;
+        gap: 6px 10px;
+    }
+    
+    #tabela-corpo td {
+        display: block;
+        padding: 0 !important;
+        border: none !important;
+        text-align: left;
+    }
+    
+    /* Posição */
+    #tabela-corpo td:nth-child(1) { 
+        grid-area: pos;
+        font-size: 1.3rem !important;
+    }
+    
+    /* Nome do Piloto */
+    #tabela-corpo td:nth-child(2) { 
+        grid-area: driver;
+        font-size: 1.2rem;
+    }
+    
+    /* Equipe */
+    #tabela-corpo td:nth-child(3) { 
+        grid-area: team;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: -6px;
+    }
+    
+    /* Cor da Equipe (Bolinha) */
+    #tabela-corpo td:nth-child(4) { 
+        grid-area: color;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    /* Tempo de Volta / Gap */
+    #tabela-corpo td:nth-child(5) { 
+        grid-area: time;
+        text-align: right;
+        font-size: 1.05rem !important;
     }
 }
