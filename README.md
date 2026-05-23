@@ -33,4 +33,5 @@ Para contornar o alto consumo de RAM e os bloqueios de IP (*Akamai Firewall*) em
 ## 📱 Acesso
 
 O Front-End está hospedado no GitHub Pages e consome o Back-End hospedado no Render.
-👉 **[Acessar o Projeto https://isardrgs.github.io/F1-Racing-Data/front-end/](#)**
+<img width="1891" height="899" alt="image" src="https://github.com/user-attachments/assets/fbae2bbf-6711-4a84-b9e4-b3494397fec6" />
+
