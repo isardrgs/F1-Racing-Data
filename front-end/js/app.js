@@ -1,4 +1,3 @@
-// CONFIGURAÇÃO DE PRODUÇÃO: Quando hospedar no Render, mude o endereço abaixo
 const API_BASE_URL = 'https://f1-racing-data.onrender.com';
 
 const anoSelect = document.getElementById('ano-select');
@@ -10,7 +9,6 @@ const circuitoContainer = document.getElementById('circuito-container');
 const gpName = document.getElementById('gp-name');
 const sessionNameSubtitle = document.getElementById('session-name');
 
-// 1. Popula os Anos
 const anoAtual = new Date().getFullYear();
 for (let ano = anoAtual; ano >= 2018; ano--) {
     const option = document.createElement('option');
@@ -19,7 +17,6 @@ for (let ano = anoAtual; ano >= 2018; ano--) {
     anoSelect.appendChild(option);
 }
 
-// 2. Quando seleciona o ANO -> Busca os GPs
 anoSelect.addEventListener('change', async () => {
     const ano = anoSelect.value;
     
@@ -55,7 +52,6 @@ anoSelect.addEventListener('change', async () => {
     }
 });
 
-// 3. Quando seleciona o GP -> Busca as Sessões (Treino 1, Qualy, Sprint, Race...)
 corridaSelect.addEventListener('change', async () => {
     const ano = anoSelect.value;
     const gp = corridaSelect.value;
@@ -91,12 +87,10 @@ corridaSelect.addEventListener('change', async () => {
     }
 });
 
-// 4. Quando seleciona a Sessão -> Libera o botão de carregar
 sessaoSelect.addEventListener('change', () => {
     btnCarregar.disabled = !sessaoSelect.value;
 });
 
-// 5. Clica no Botão -> Processa a Telemetria
 btnCarregar.addEventListener('click', async () => {
     const ano = anoSelect.value;
     const gp = corridaSelect.value;
@@ -112,7 +106,6 @@ btnCarregar.addEventListener('click', async () => {
     btnCarregar.textContent = "Carregando...";
 
     try {
-        // Envia a sessão específica na URL
         const resposta = await fetch(`${API_BASE_URL}/api/resultado/${ano}/${gp}/${sessao}`);
         const dados = await resposta.json();
 
