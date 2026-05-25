@@ -27,7 +27,7 @@ Um painel interativo e responsivo que fornece dados históricos sobre as tempora
 ## 🚀 Como a Arquitetura Funciona
 
 Para contornar o alto consumo de RAM e os bloqueios de IP (*Akamai Firewall*) em servidores gratuitos na nuvem, o projeto foi arquitetado separando responsabilidades:
-1. O **Front-End** é inteligente: ele injeta os mapas dos circuitos nativamente (sem depender do servidor) e faz requisições cirúrgicas para o back-end.
+1. O **Front-End** é inteligente ele injeta os mapas dos circuitos nativamente (sem depender do servidor) e faz requisições cirúrgicas para o back-end.
 2. O **Back-End** baixa apenas as tabelas de voltas cruas (`laps=True, telemetry=False`), formata os tempos, corrige inconsistências do banco de dados e devolve um JSON enxuto para a interface.
 
 ## 📱 Acesso
