@@ -5,7 +5,7 @@ Um painel interativo e responsivo que fornece dados históricos sobre as tempora
 ## ✨ Destaques e Funcionalidades
 
 * **Dados Dinâmicos:** Consulta de calendários, circuitos e resultados de sessões (Qualifying, Sprint e Race) a partir de 2020.
-* **Resiliência e Fallback:** Sistema inteligente no Back-End que lida com bloqueios de firewall da API oficial da F1, redirecionando silenciosamente para bancos de dados de backup (Ergast) sem quebrar a experiência do usuário.
+* **Resiliência e Fallback:** Sistema inteligente no Back-End que lida com bloqueios de firewall da API da F1, redirecionando silenciosamente para bancos de dados de backup (Ergast) sem quebrar a experiência do usuário.
 * **Identidade Visual Garantida:** Dicionário de cores embutido que preserva a identidade visual (hexadecimais oficiais) das escuderias mesmo quando a API falha.
 * **Mapas Otimizados:** Renderização de traçados dos circuitos via imagens estáticas SVG/PNG otimizadas, poupando a memória do servidor e garantindo carregamento instantâneo.
 * **Client-Side Caching:** Uso de `localStorage` no JavaScript para salvar dados das sessões consultadas, reduzindo requisições ao servidor e zerando o tempo de espera do usuário em acessos repetidos.
